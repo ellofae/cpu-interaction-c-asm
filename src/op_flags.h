@@ -4,6 +4,11 @@
 #define ARCH_OPTION_X86 "--arch=x86"
 #define ARCH_OPTION_X86_64 "--arch=x86_64"
 
+enum ring_privilage {
+    USER_PRIVILAGE,
+    KERNEL_PRIVILAGE,
+};
+
 enum system_architecture {
     ARCH_X86,
     ARCH_X86_64,
@@ -11,6 +16,7 @@ enum system_architecture {
 
 typedef struct _private_arch_config {
     enum system_architecture system_arch;
+    enum ring_privilage system_privilage;
 } architecture_configuration;
 
 typedef struct _private_sys_flags {
