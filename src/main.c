@@ -10,6 +10,7 @@ static system_flags flags;
 static void print_binary(unsigned int value);
 static void get_cpu_vendor(cpu_registers *registers);
 static void read_misc_security_info_bits(cpu_registers *registers);
+static void read_segment_registers(void);
 
 int main(int argc, char** argv) {
     flags.arch_config.system_arch = ARCH_X86;
@@ -42,6 +43,8 @@ int main(int argc, char** argv) {
     registers.ecx = 0;
 
     read_misc_security_info_bits(&registers);
+
+    read_segment_registers();
 
     return 0;
 }
@@ -91,4 +94,28 @@ static void read_misc_security_info_bits(cpu_registers *registers) {
     } else {
         log_message(LOG_WARNING, "Supervisor-Mode Access Prevention (SMAP) feature - unsupported\n");
     }
+}
+
+static void segment_register_info(char *register_name, uint16 reg_value) {
+    log_message(LOG_INFO, "Segment Register - %s, Register Value - %x\n", register_name, reg_value);
+    log_message(LOG_INFO, "RPL=%d, Descriptor Table: %s, Index: %d\n\n", reg_value & 0x03, 
+        ((reg_value >> 2) & 0x01) ? "LDT (Local Descriptor Table)" : "GDT (Global Descriptor Table)",
+        (reg_value >> 3) & 0x1FFF);
+}
+
+static void read_segment_registers(void) {
+    log_message(LOG_INFO, "There are several segment registers available: CS, SS. DS, ES, FS, GS\n");
+    log_message(LOG_INFO, "Accessing segment registers in ring 3 (userspace)\n\n");
+
+    segment_registers registers;  
+
+    read_cs_reg(&registers.cs);
+    read_ss_reg(&registers.ss);
+
+    segment_register_info("CS", registers.cs);
+    segment_register_info("SS", registers.ss);
+
+    log_message(LOG_WARNING, "Other segment registers are zeros in userspace\n");
+
+    return;
 }
